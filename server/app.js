@@ -11,10 +11,15 @@ const orderRouter = require("./routes/customer_orders");
 const slugRouter = require("./routes/slugs");
 const orderProductRouter = require('./routes/customer_order_product');
 const wishlistRouter = require('./routes/wishlist');
+const dashboardRouter = require("./routes/dashboard");
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+
 var cors = require("cors");
 
 const app = express();
 
+app.use("/api/dashboard", dashboardRouter);
 app.use(express.json());
 app.use(
   cors({
@@ -23,6 +28,19 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+app.use(async (req, res, next) => {
+  try {
+    await prisma.visitorLog.create({
+      data: {
+        ip: req.ip || req.connection.remoteAddress || "unknown",
+        userAgent: req.headers["user-agent"] || "unknown",
+      },
+    });
+  } catch (err) {
+    console.error("VisitorLog insert error:", err.message);
+  }
+  next();
+});
 app.use(fileUpload());
 
 app.use("/api/products", productsRouter);

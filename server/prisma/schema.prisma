@@ -27,6 +27,7 @@ model Product {
   category       Category                 @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   customerOrders customer_order_product[]
   Wishlist       Wishlist[]
+  productTrends  ProductTrend[]
 }
 
 model Image {
@@ -83,4 +84,28 @@ model Wishlist {
   productId String
   user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
+}
+
+// Analytics models for product trends and visitor logs
+model ProductTrend {
+  id        Int      @id @default(autoincrement())
+  productId String? // references Product.id (which is String) — optional
+  product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+  eventType String   @default("created")
+  title     String?
+  price     Int?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([productId])
+}
+
+model VisitorLog {
+  id        Int      @id @default(autoincrement())
+  ip        String
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([ip])
 }
